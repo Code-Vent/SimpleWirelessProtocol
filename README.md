@@ -1,8 +1,7 @@
 # chaos
 Communication protocol for home appliances using 433MHz transmitters and receivers
 
-The protocol uses TMR0 to synchronize transmitt and receive
-The receiver output is connected to the external clock source 
+The protocol uses TMR0 to synchronize transmitt and receive. The receiver output is connected to the external clock source 
 of TMR0.
 
 Protocol Algorithm
