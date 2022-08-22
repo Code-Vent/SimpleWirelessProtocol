@@ -1,3 +1,6 @@
+#ifndef DEF_H
+#define DEF_H
+
 #define BIT0_ON 0b00000001
 #define BIT1_ON 0b00000010
 #define BIT2_ON 0b00000100
@@ -9,6 +12,8 @@
 #define ZERO    0b00000000
 #define ONE     0b00000001
 #define ONES     0b11111111
+
+
 #define BIT0_OFF 0b11111110
 #define BIT1_OFF 0b11111101
 #define BIT2_OFF 0b11111011
@@ -17,6 +22,10 @@
 #define BIT5_OFF 0b11011111
 #define BIT6_OFF 0b10111111
 #define BIT7_OFF 0b01111111
+
+
+
+
 #define TOGGLE_RA0 ( PORTA.F0 = (PORTA.F0 == 0)? 1 : 0 )
 #define ON_RA0 (PORTA.F0 = 1)
 #define OFF_RA0 (PORTA.F0 = 0)
@@ -46,6 +55,16 @@
 #define ON_RA5 (PORTA.F5 = 1)
 #define OFF_RA5 (PORTA.F5 = 0)
 #define IS_RA5_ON (PORTA.F5 == 1)
+
+#define TOGGLE_RA6 ( PORTA.F6 = (PORTA.F6 == 0)? 1 : 0 )
+#define ON_RA6 (PORTA.F6 = 1)
+#define OFF_RA6 (PORTA.F6 = 0)
+#define IS_RA6_ON (PORTA.F6 == 1)
+
+#define TOGGLE_RA7 ( PORTA.F7 = (PORTA.F7 == 0)? 1 : 0 )
+#define ON_RA7 (PORTA.F7 = 1)
+#define OFF_RA7 (PORTA.F7 = 0)
+#define IS_RA7_ON (PORTA.F7 == 1)
 
 #define TOGGLE_RB0 ( PORTB.F0 = (PORTB.F0 == 0)? 1 : 0 )
 #define ON_RB0 (PORTB.F0 = 1)
@@ -86,6 +105,11 @@
 #define ON_RB7 (PORTB.F7 = 1)
 #define OFF_RB7 (PORTB.F7 = 0)
 #define IS_RB7_ON (PORTB.F7 == 1)
+
+#define ENABLE_TMR0_INTERRUPT (INTCON.F5 = 1)
+#define DISABLE_TMR0_INTERRUPT (INTCON.F5 = 0)
+#define CLEAR_TMR0_FLAG (INTCON.F2 = 0)
+
 #define MAKE_RA0_INPUT (TRISIA.F0 = 1)
 #define MAKE_RA0_OUTPUT (TRISIA.F0 = 0)
 #define MAKE_RA1_INPUT (TRISIA.F1 = 1)
@@ -113,3 +137,7 @@
 #define MAKE_RB6_OUTPUT (TRISB.F6 = 0)
 #define MAKE_RB7_INPUT (TRISB.F7 = 1)
 #define MAKE_RB7_OUTPUT (TRISB.F7 = 0)
+
+
+#endif
+
