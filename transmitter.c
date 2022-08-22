@@ -6,6 +6,7 @@ int main()
 
         protocolInit();
         while(1){
-            receive();
+            Delay_ms(1000);
+            transmit();
         }
 }
