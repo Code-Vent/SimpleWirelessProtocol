@@ -91,7 +91,7 @@ void transmit() {
 	Soft_UART_Write(MSG_HEADER);
 	shortSilence();
 	Soft_UART_Write(destAddr);
-	shortSilence();
+	longSilence();
 	now = doNothing;
 	future = sendData;
 	seekSilence();
