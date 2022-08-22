@@ -136,7 +136,7 @@ void readData() {
 }
 
 void receive() {
-	if (canReceive == FALSE)
+	if (canReceive() == FALSE)
 		return;
 	now = doNothing;
 	future = readDestAddress;
