@@ -4,28 +4,27 @@
 //static unsigned long longVal;
 static char error;
 static unsigned char i;
-static unsigned char srcAddr = 0x1e;
-static unsigned char destAddr = 0x0e;
+static unsigned char destAddress;
 static unsigned char tmr0_;
-static unsigned char block = FALSE;
-static unsigned char val = 0xde;
+static unsigned char value;
 static unsigned char header;
 static unsigned char address;
-static unsigned char temp;
 
 void(*now)(void) = 0;
 void(*future)(void) = 0;
 void shortSilence();
+void doNothing();
+char setAfterCountdown(unsigned char t, void(*lhs)(), void(*rhs)());
 
-void seekSilence(void)
+void seekSilence(unsigned char counter)
 {
-	tmr0_ = TMR0;
-	shortSilence();
-	while (tmr0_ != TMR0) {
+    tmr0_ = TMR0;
+    shortSilence();
+    while (tmr0_ != TMR0 && setAfterCountdown(--counter, future, doNothing)==FALSE) {
 		tmr0_ = TMR0;
 		shortSilence();
 	}
-	now = future;
+    now = future;
 }
 
 char canTransmit() {
@@ -53,8 +52,10 @@ void longSilence() {
 	Delay_us(7 * MicroSecPerBit);
 }
 
-void blocking() {
-	while (block == TRUE);
+char setAfterCountdown(unsigned char t, void(*lhs)(), void(*rhs)()) {
+	if (t > 0) return FALSE;
+	lhs = rhs;
+	return TRUE;
 }
 
 void doNothing() {
@@ -76,13 +77,13 @@ Transmit Algorithm:
 - On interrupt transmit data
 */
 
-void sendData() {
-	Soft_UART_Write(val);
+void sendByte() {
+	Soft_UART_Write(value);
 }
 
-void transmit() {
+char transmit(unsigned char destAddr, unsigned char b) {
 	if (canTransmit() == FALSE)
-		return;
+		return FALSE;
 	for (i = 0;i < 255;++i) {
 		TOGGLE_RA6;
 		Delay_us(MicroSecPerBit);
@@ -91,12 +92,14 @@ void transmit() {
 	Soft_UART_Write(MSG_HEADER);
 	shortSilence();
 	Soft_UART_Write(destAddr);
-	longSilence();
+	shortSilence();
+	value = b;
 	now = doNothing;
-	future = sendData;
-	seekSilence();
+	future = sendByte;
+	seekSilence(255);
 	now();
 	TMR0 = TMR0_Offset;
+	return (now == doNothing) ? FALSE : TRUE;
 }
 
 /*
@@ -125,41 +128,42 @@ Receive Algorithm:
 
 void readDestAddress() {
 	header = Soft_UART_Read(&error);
-	address = Soft_UART_Read(&error);
+	destAddress = Soft_UART_Read(&error);
 }
 
-void readData() {
-	temp = Soft_UART_Read(&error);
-	if (temp == val)
-		TOGGLE_RB5;
+void readByte() {
+	value = Soft_UART_Read(&error);
 	shortSilence();
 }
 
-void receive() {
+char receive(unsigned char* v) {
 	if (canReceive() == FALSE)
-		return;
+		return FALSE;
 	now = doNothing;
 	future = readDestAddress;
-	seekSilence();
+	seekSilence(255);
 	now();
-	if (address != destAddr)
-		return;
+	if (address != destAddress || header != MSG_HEADER)
+		return FALSE;
 	for (i = 0;i < 255;++i) {
 		TOGGLE_RA6;
 		Delay_us(MicroSecPerBit);
 	}
-	readData();
+	readByte();
+	*v = value;
 	TMR0 = TMR0_Offset;
+	destAddress = header = 0;
+	return TRUE;
 }
 
 
-void protocolInit() {
+void protocolInit(unsigned char addr) {
 	//Set TMR0 clock to external clock input
 	// rising edge <--------- Important
 	OPTION_REG = BIT5_ON | BIT3_ON | BIT2_ON | BIT1_ON | BIT0_ON;
 	INTCON = 0;
 	TMR0 = TMR0_Offset;
 	Soft_UART_Init(&PORTA, 7, 6, BitsPerSec, 0);
-	TRISB.F5 = 0;
+	address = addr;
 	shortSilence();
 }
