@@ -1,7 +1,5 @@
 #include"protocol.h"
 
-//static unsigned char tmr0Offset;
-//static unsigned long longVal;
 static char error;
 static unsigned char i;
 static unsigned char destAddress;
@@ -16,7 +14,7 @@ void shortSilence();
 void doNothing();
 char setAfterCountdown(unsigned char t, void(*lhs)(), void(*rhs)());
 
-void seekSilence(unsigned char counter)
+void seekSilence(int counter)
 {
     tmr0_ = TMR0;
     shortSilence();
@@ -61,22 +59,6 @@ char setAfterCountdown(unsigned char t, void(*lhs)(), void(*rhs)()) {
 void doNothing() {
 }
 
-/*
-Transmit Algorithm:
-- call collision avoidance function
-- if TMR0 == sentinel(it is OK to transmit)
-- transmit pulses to cause TMR0 interrupt on the recipient
-- transmit message header
-- delay for t >= 2 * duration per bit
-- transmit source address
-- delay for t >= 2 * duration per bit
-- transmit destination address
-- delay for t >= 2 * duration per bit
-- set TMR0 equal to sentinel value
-- enable interrupt
-- On interrupt transmit data
-*/
-
 void sendByte() {
 	Soft_UART_Write(value);
 }
@@ -96,35 +78,11 @@ char transmit(unsigned char destAddr, unsigned char b) {
 	value = b;
 	now = doNothing;
 	future = sendByte;
-	seekSilence(255);
+	seekSilence(512);
 	now();
 	TMR0 = TMR0_Offset;
 	return (now == doNothing) ? FALSE : TRUE;
 }
-
-/*
-Receive Algorithm:
-- if TMR0 != sentinel(incoming message)
-- enable TMR0 interrupt
-- On interrupt
-- delay for t >= 2 * duration per bit
-- read a byte from receive
-- if byte == message header
-- read 2 byte from receiver
-- if byte[0] == myAddress
-- transmit pulses to cause TMR0 interrupt on the sender
-- else
-- wait for t = time to transmit pulses
-- read remaining data from sender
-- if destinationAdderess == myAddress
-- process message
-- else
-- if findOnMyList(destinationAdderess) == true
-- wait to transmit data
-- forward/transmit message
-- else
-- save sourceAddress
-*/
 
 void readDestAddress() {
 	header = Soft_UART_Read(&error);
@@ -141,7 +99,7 @@ char receive(unsigned char* v) {
 		return FALSE;
 	now = doNothing;
 	future = readDestAddress;
-	seekSilence(255);
+	seekSilence(512);
 	now();
 	if (address != destAddress || header != MSG_HEADER)
 		return FALSE;
