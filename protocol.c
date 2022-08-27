@@ -18,6 +18,8 @@ void seekSilence(int counter)
 {
     tmr0_ = TMR0;
     shortSilence();
+	if(tmr0_ == TMR0)
+		return;
     while (tmr0_ != TMR0 && setAfterCountdown(--counter, future, doNothing)==FALSE) {
 		tmr0_ = TMR0;
 		shortSilence();
